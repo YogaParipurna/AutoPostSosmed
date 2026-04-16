@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 247, 248, 250; /* Light gray/blue tint for a premium look */
+    --foreground: 23, 23, 23;
+    --surface: 255, 255, 255;
+  }
+
+  .dark {
+    --background: 15, 15, 20; /* Deep blue-gray for dark mode */
+    --foreground: 240, 240, 240;
+    --surface: 25, 25, 30;
+  }
+}
+
+body {
+  color: rgb(var(--foreground));
+  background: rgb(var(--background));
+  @apply antialiased selection:bg-primary-200 selection:text-primary-900;
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm dark:bg-black/50 dark:border-white/10;
+  }
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl dark:bg-[#1a1a24]/80 dark:border-white/10;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  @apply outline-none min-h-[200px] text-base leading-relaxed;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.ProseMirror img {
+  @apply rounded-xl max-w-full h-auto mt-4;
+}
