@@ -10,7 +10,7 @@ export async function GET() {
   linkedinAuthUrl.searchParams.append('client_id', clientId || '')
   linkedinAuthUrl.searchParams.append('redirect_uri', redirectUri)
   linkedinAuthUrl.searchParams.append('state', state)
-  linkedinAuthUrl.searchParams.append('scope', 'w_member_social r_liteprofile')
+  linkedinAuthUrl.searchParams.append('scope', 'w_member_social profile openid email')
 
   return NextResponse.redirect(linkedinAuthUrl.toString())
 }

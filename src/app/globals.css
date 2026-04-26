@@ -4,30 +4,71 @@
 
 @layer base {
   :root {
-    --background: 247, 248, 250; /* Light gray/blue tint for a premium look */
+    --background: 243, 242, 239; /* LinkedIn Light Gray */
     --foreground: 23, 23, 23;
     --surface: 255, 255, 255;
   }
 
   .dark {
-    --background: 15, 15, 20; /* Deep blue-gray for dark mode */
+    --background: 5, 8, 15; /* Deep futuristic navy black */
     --foreground: 240, 240, 240;
-    --surface: 25, 25, 30;
+    --surface: 10, 15, 25;
   }
 }
 
 body {
   color: rgb(var(--foreground));
+  background: linear-gradient(135deg, #f6f8fd 0%, #eef2f9 100%);
+  @apply antialiased selection:bg-primary-200 selection:text-primary-900 min-h-screen relative overflow-x-hidden;
+}
+
+.dark body {
   background: rgb(var(--background));
-  @apply antialiased selection:bg-primary-200 selection:text-primary-900;
+}
+
+/* Ambient Background Glows */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  width: 70vw;
+  height: 70vw;
+  border-radius: 50%;
+  filter: blur(100px);
+  z-index: -1;
+  opacity: 0.8;
+  pointer-events: none;
+  animation: float 15s ease-in-out infinite alternate;
+}
+body::before {
+  background: radial-gradient(circle, rgba(10, 102, 194, 0.15) 0%, rgba(10, 102, 194, 0.05) 50%, transparent 70%);
+  top: -20vh;
+  left: -20vw;
+}
+body::after {
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.05) 50%, transparent 70%);
+  bottom: -20vh;
+  right: -20vw;
+  animation-delay: -5s;
+}
+
+.dark body::before {
+  background: radial-gradient(circle, rgba(10,102,194,0.4) 0%, rgba(0,0,0,0) 70%);
+  opacity: 0.4;
+}
+.dark body::after {
+  background: radial-gradient(circle, rgba(0,212,255,0.25) 0%, rgba(0,0,0,0) 70%);
+  opacity: 0.4;
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm dark:bg-black/50 dark:border-white/10;
+    @apply bg-[#060A16]/80 backdrop-blur-3xl border-r border-primary-900/40 shadow-[0_0_30px_rgba(0,0,0,0.8)];
   }
   .glass-card {
-    @apply bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl dark:bg-[#1a1a24]/80 dark:border-white/10;
+    @apply bg-gradient-to-br from-[#0A1020]/90 to-[#050811]/90 backdrop-blur-2xl border border-primary-500/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] rounded-2xl transition-all duration-300;
+  }
+  .glass-card:hover {
+    @apply border-primary-400/50 shadow-[0_0_20px_rgba(0,212,255,0.15)] transform -translate-y-1 bg-[#0A1020];
   }
   .text-balance {
     text-wrap: balance;

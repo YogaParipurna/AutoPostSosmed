@@ -1,15 +1,11 @@
-import { OpenAI } from 'openai'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
+import { GoogleGenAI } from '@google/genai'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
   try {
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || '',
-    })
-
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -19,25 +15,50 @@ export async function POST(req: Request) {
 
     const { prompt, type } = await req.json()
 
-    let systemPrompt = 'You are a professional LinkedIn post creator. Write engaging, professional content suited for LinkedIn.'
+    let systemPrompt = 'You are a professional LinkedIn post creator.'
+    if (type === 'rewrite') systemPrompt = 'You are a skilled editor.'
+    if (type === 'hashtags') systemPrompt = 'Generate 5 highly relevant LinkedIn hashtags.'
 
-    if (type === 'rewrite') {
-      systemPrompt = 'You are a skilled editor. Rewrite the provided text to be more engaging and professional for LinkedIn.'
-    } else if (type === 'hashtags') {
-      systemPrompt = 'Generate 5 highly relevant LinkedIn hashtags for the provided text. Return ONLY the hashtags separated by spaces.'
+    // Check if GEMINI_API_KEY is actually present
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.trim() === '') {
+      return NextResponse.json({ error: 'GEMINI_API_KEY is missing or empty. Please check your .env.local file.' }, { status: 400 })
     }
 
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt }
-      ],
-      model: 'gpt-4o', // using a fast standard model
+    const ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
     })
 
-    return NextResponse.json({ result: completion.choices[0].message.content })
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+        config: {
+          systemInstruction: systemPrompt
+        }
+      });
+      
+      // Safety fallback in case response.text is not a direct property or is undefined
+      let finalResult = ''
+      if (typeof response.text === 'function') {
+        finalResult = response.text()
+      } else if (response.text) {
+        finalResult = response.text
+      } else if (response.candidates && response.candidates[0]?.content?.parts[0]?.text) {
+        finalResult = response.candidates[0].content.parts[0].text
+      } else {
+        return NextResponse.json({ error: 'Unexpected response format from Gemini: ' + JSON.stringify(response) }, { status: 500 })
+      }
+
+      return NextResponse.json({ result: finalResult })
+    } catch (apiError: any) {
+      console.error('Gemini API Error:', apiError)
+      // Extract specific google API error details if present
+      const detailedMessage = apiError?.message || apiError?.error?.message || JSON.stringify(apiError)
+      return NextResponse.json({ error: `Gemini API Error: ${detailedMessage}` }, { status: 500 })
+    }
+
+  } catch (error: any) {
+    console.error('Server Route Error:', error)
+    return NextResponse.json({ error: error.message || 'Unknown server error' }, { status: 500 })
   }
 }

@@ -56,15 +56,15 @@ export default async function PostsPage({
           posts.map((post) => (
             <div key={post.id} className="glass-card p-6 flex flex-col md:flex-row gap-4 justify-between transition-all hover:bg-white/90 dark:hover:bg-[#1a1a24]/90 hover:shadow-2xl">
               <div className="flex-1 min-w-0">
-                <div className="prose prose-sm dark:prose-invert max-w-none line-clamp-2" dangerouslySetInnerHTML={{ __html: post.content || '<em>Empty draft</em>' }} />
-                <div className="mt-4 flex items-center gap-4 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <div className="prose prose-sm dark:prose-invert max-w-none line-clamp-2 text-gray-200" dangerouslySetInnerHTML={{ __html: post.content || '<em>Empty draft</em>' }} />
+                <div className="mt-4 flex items-center gap-4 text-xs font-semibold text-gray-400">
                   <span>Created {format(new Date(post.created_at), 'MMM d, yyyy')}</span>
-                  {post.scheduled_at && <span className="text-blue-500">Scheduled for {format(new Date(post.scheduled_at), 'MMM d, yyyy HH:mm')}</span>}
-                  {post.published_at && <span className="text-green-500">Published on {format(new Date(post.published_at), 'MMM d, yyyy HH:mm')}</span>}
+                  {post.scheduled_at && <span className="text-neon-blue drop-shadow-md">Scheduled for {format(new Date(post.scheduled_at), 'MMM d, yyyy HH:mm')}</span>}
+                  {post.published_at && <span className="text-green-400 drop-shadow-md">Published on {format(new Date(post.published_at), 'MMM d, yyyy HH:mm')}</span>}
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Link href={`/dashboard/editor?id=${post.id}`} className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <Link href={`/dashboard/editor?id=${post.id}`} className="bg-primary-600 hover:bg-primary-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(10,102,194,0.4)] hover:shadow-[0_0_20px_rgba(0,212,255,0.4)]">
                   {status === 'published' ? 'View' : 'Edit'}
                 </Link>
               </div>

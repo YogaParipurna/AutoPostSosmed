@@ -43,15 +43,53 @@ export async function GET(req: Request) {
     const data = await response.json()
 
     if (data.access_token) {
+      const userInfoResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
+        headers: {
+          'Authorization': `Bearer ${data.access_token}`
+        }
+      });
+      const userInfo = await userInfoResponse.json();
+      const accountName = userInfo.name || null;
+      const accountPicture = userInfo.picture || null;
+      const accountSub = userInfo.sub || null; // This is the URN ID needed to publish!
+
       // Save token in DB
       const expiresAt = new Date(Date.now() + (data.expires_in * 1000)).toISOString()
       
-      await supabase.from('social_accounts').upsert({
-        user_id: user.id,
-        provider: 'linkedin',
-        access_token: data.access_token,
-        expires_at: expiresAt
-      }, { onConflict: 'user_id, provider' })
+      const { data: existing } = await supabase
+        .from('social_accounts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('provider', 'linkedin')
+        .single();
+
+      let dbError = null;
+      if (existing) {
+        const { error } = await supabase.from('social_accounts').update({
+          access_token: data.access_token,
+          expires_at: expiresAt,
+          account_name: accountName,
+          account_picture: accountPicture,
+          provider_account_id: accountSub
+        }).eq('id', existing.id);
+        dbError = error;
+      } else {
+        const { error } = await supabase.from('social_accounts').insert({
+          user_id: user.id,
+          provider: 'linkedin',
+          access_token: data.access_token,
+          expires_at: expiresAt,
+          account_name: accountName,
+          account_picture: accountPicture,
+          provider_account_id: accountSub
+        });
+        dbError = error;
+      }
+
+      if (dbError) {
+        console.error("Database save failed:", dbError);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=db_error`)
+      }
 
       return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?success=true`)
     } else {

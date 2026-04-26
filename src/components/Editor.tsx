@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import CharacterCount from '@tiptap/extension-character-count'
@@ -14,6 +15,7 @@ const limit = 3000
 
 export default function Editor({ content, onChange }: EditorProps) {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Image,
@@ -31,6 +33,12 @@ export default function Editor({ content, onChange }: EditorProps) {
       onChange(editor.getHTML(), editor.getText())
     },
   })
+
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content)
+    }
+  }, [content, editor])
 
   if (!editor) {
     return null
